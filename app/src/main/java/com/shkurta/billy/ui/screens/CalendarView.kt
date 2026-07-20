@@ -21,7 +21,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.filled.Subscriptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shkurta.billy.domain.model.Entry
 import com.shkurta.billy.domain.model.EntryType
+import com.shkurta.billy.domain.model.PaymentFrequency
 import com.shkurta.billy.ui.theme.Black
 import com.shkurta.billy.ui.theme.DarkGray
 import com.shkurta.billy.ui.theme.Gray
@@ -118,6 +120,9 @@ fun CalendarView(
                 }
             }
 
+            val pageMonth = calendar.get(Calendar.MONTH)
+            val pageYear = calendar.get(Calendar.YEAR)
+
             val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
             // Calendar.DAY_OF_WEEK: SUNDAY=1, MONDAY=2, ...
             // We want MONDAY=0, TUESDAY=1, ... SUNDAY=6
@@ -137,7 +142,12 @@ fun CalendarView(
 
                 items(daysInMonth) { index ->
                     val day = index + 1
-                    val entriesOnDay = entries.filter { it.dueDay == day }
+                    val entriesOnDay = entries.filter { entry ->
+                        entry.dueDay == day && (
+                            entry.frequency != PaymentFrequency.ONE_OFF || 
+                            (entry.dueMonth == pageMonth && entry.dueYear == pageYear)
+                        )
+                    }
                     
                     CalendarDayCell(
                         day = day,
@@ -185,8 +195,14 @@ fun CalendarDayCell(
                         .background(White),
                     contentAlignment = Alignment.Center
                 ) {
+                    val icon = if (entries.any { it.type == EntryType.SUBSCRIPTION }) {
+                         Icons.Default.Subscriptions
+                    } else {
+                        Icons.AutoMirrored.Filled.ReceiptLong
+                    }
+                    
                     Icon(
-                        imageVector = Icons.Default.Notifications,
+                        imageVector = icon,
                         contentDescription = null,
                         tint = Black,
                         modifier = Modifier.size(12.dp)

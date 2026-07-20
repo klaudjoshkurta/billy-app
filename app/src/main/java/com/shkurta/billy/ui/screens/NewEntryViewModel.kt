@@ -13,6 +13,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import java.util.Calendar
+
 @HiltViewModel
 class NewEntryViewModel @Inject constructor(
     private val repository: EntryRepository
@@ -35,6 +37,12 @@ class NewEntryViewModel @Inject constructor(
     var dueDay by mutableStateOf("")
         private set
 
+    var dueMonth by mutableStateOf<Int?>(null)
+        private set
+
+    var dueYear by mutableStateOf<Int?>(null)
+        private set
+
     val isEditMode: Boolean get() = currentEntryId != null
 
     fun loadEntry(id: Int) {
@@ -47,6 +55,8 @@ class NewEntryViewModel @Inject constructor(
                 type = entry.type
                 frequency = entry.frequency
                 dueDay = entry.dueDay.toString()
+                dueMonth = entry.dueMonth
+                dueYear = entry.dueYear
             }
         }
     }
@@ -65,6 +75,14 @@ class NewEntryViewModel @Inject constructor(
 
     fun onFrequencyChange(newFrequency: PaymentFrequency) {
         frequency = newFrequency
+        if (newFrequency == PaymentFrequency.ONE_OFF) {
+            val calendar = Calendar.getInstance()
+            dueMonth = calendar.get(Calendar.MONTH)
+            dueYear = calendar.get(Calendar.YEAR)
+        } else {
+            dueMonth = null
+            dueYear = null
+        }
     }
 
     fun onDueDayChange(newDay: String) {
@@ -86,7 +104,9 @@ class NewEntryViewModel @Inject constructor(
                     cost = costDouble,
                     type = type,
                     frequency = frequency,
-                    dueDay = dueDayInt
+                    dueDay = dueDayInt,
+                    dueMonth = dueMonth,
+                    dueYear = dueYear
                 )
             )
             onSuccess()

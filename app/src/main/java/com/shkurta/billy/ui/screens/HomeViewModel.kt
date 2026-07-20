@@ -31,6 +31,7 @@ class HomeViewModel @Inject constructor(
                 PaymentFrequency.MONTHLY -> entry.cost
                 PaymentFrequency.SIX_MONTHS -> entry.cost / 6.0
                 PaymentFrequency.ANNUAL -> entry.cost / 12.0
+                PaymentFrequency.ONE_OFF -> 0.0 // Exclude from recurring summary
             }
         }
     }.stateIn(

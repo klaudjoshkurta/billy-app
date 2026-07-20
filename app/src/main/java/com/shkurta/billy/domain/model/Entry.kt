@@ -11,7 +11,9 @@ data class Entry(
     val cost: Double,
     val type: EntryType,
     val frequency: PaymentFrequency,
-    val dueDay: Int // Day of the month (1-31)
+    val dueDay: Int, // Day of the month (1-31)
+    val dueMonth: Int? = null, // Optional for ONE_OFF
+    val dueYear: Int? = null   // Optional for ONE_OFF
 )
 
 enum class EntryType {
@@ -19,5 +21,5 @@ enum class EntryType {
 }
 
 enum class PaymentFrequency {
-    MONTHLY, SIX_MONTHS, ANNUAL
+    MONTHLY, SIX_MONTHS, ANNUAL, ONE_OFF
 }

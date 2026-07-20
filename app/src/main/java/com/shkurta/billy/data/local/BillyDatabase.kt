@@ -8,7 +8,7 @@ import com.shkurta.billy.domain.model.Entry
 import com.shkurta.billy.domain.model.EntryType
 import com.shkurta.billy.domain.model.PaymentFrequency
 
-@Database(entities = [Entry::class], version = 2, exportSchema = false)
+@Database(entities = [Entry::class], version = 3, exportSchema = false)
 @TypeConverters(BillyTypeConverters::class)
 abstract class BillyDatabase : RoomDatabase() {
     abstract val entryDao: EntryDao
