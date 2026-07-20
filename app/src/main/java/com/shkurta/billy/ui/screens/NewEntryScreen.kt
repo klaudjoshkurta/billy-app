@@ -28,6 +28,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -38,21 +40,35 @@ import com.shkurta.billy.ui.components.BillyTabSwitcher
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewEntryScreen(
+    entryId: Int = -1,
     onNavigateBack: () -> Unit,
     viewModel: NewEntryViewModel = hiltViewModel()
 ) {
     var expanded by remember { mutableStateOf(false) }
 
+    LaunchedEffect(entryId) {
+        if (entryId != -1) {
+            viewModel.loadEntry(entryId)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("New Entry") },
+                title = { Text(if (viewModel.isEditMode) "Edit Entry" else "New Entry") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
+                    if (viewModel.isEditMode) {
+                        IconButton(onClick = {
+                            viewModel.deleteEntry(onSuccess = onNavigateBack)
+                        }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete")
+                        }
+                    }
                     IconButton(onClick = {
                         viewModel.saveEntry(onSuccess = onNavigateBack)
                     }) {

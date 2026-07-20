@@ -1,27 +1,21 @@
-# Walkthrough - Calendar View Implementation
+# Walkthrough - Geist and Geist Mono Fonts Support
 
-I have implemented the **Calendar View** for the Billy app, providing a visual way to track upcoming bills and subscriptions based on their due days.
+I have successfully added support for the **Geist** and **Geist Mono** font families using the Google Fonts downloadable fonts API.
 
 ## Changes Made
 
-### 1. Data Layer
-- **[Entry.kt](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/java/com/shkurta/billy/domain/model/Entry.kt)**: Added a `dueDay` field (Int) to the `Entry` model to represent the day of the month when a payment is due.
+### 1. Build Configuration
+- **[libs.versions.toml](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/gradle/libs.versions.toml)**: Added the `androidx.compose.ui:ui-text-google-fonts` dependency.
+- **[app/build.gradle.kts](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/build.gradle.kts)**: Applied the dependency to the app module.
 
-### 2. UI Layer - Calendar View
-- **[CalendarView.kt](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/java/com/shkurta/billy/ui/screens/CalendarView.kt)**:
-    - Created a custom 7-column grid layout inspired by your provided reference.
-    - **Headers**: Pill-shaped capsules for MON-SUN using `DarkGray` background.
-    - **Cells**: Rounded squares (`LightGray`) with the day number in the bottom corner.
-    - **Entry Markers**: Cells with scheduled entries switch to `DarkGray` and display a `White` icon/dot indicator.
+### 2. Resource Configuration
+- **[font_certs.xml](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/res/values/font_certs.xml)**: Created a new resource file containing the certificate hashes for the Google Fonts provider. This is required for secure font downloading.
 
-### 3. Home Screen Logic & Integration
-- **[HomeViewModel.kt](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/java/com/shkurta/billy/ui/screens/HomeViewModel.kt)**: Added a ViewModel to fetch and expose all entries from the repository.
-- **[HomeScreen.kt](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/java/com/shkurta/billy/ui/screens/HomeScreen.kt)**:
-    - Wired up `HomeViewModel` to observe the list of entries.
-    - Integrated `CalendarView` into the "Calendar" tab, passing the live data.
-
-### 4. New Entry Updates
-- **[NewEntryViewModel.kt](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/java/com/shkurta/billy/ui/screens/NewEntryViewModel.kt)** & **[NewEntryScreen.kt](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/java/com/shkurta/billy/ui/screens/NewEntryScreen.kt)**: Added a numeric input field for "Due Day (1-31)" so users can specify when their bill/subscription is scheduled.
+### 3. Typography Setup
+- **[Type.kt](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/java/com/shkurta/billy/ui/theme/Type.kt)**:
+    - Initialized the `GoogleFont.Provider`.
+    - Defined `GeistFontFamily` (Sans-serif) and `GeistMonoFontFamily` (Monospace).
+    - Updated the default `Typography` to use **Geist** for body and headlines, and **Geist Mono** for labels.
 
 ## Verification Results
 
@@ -29,6 +23,5 @@ I have implemented the **Calendar View** for the Billy app, providing a visual w
 - Ran `./gradlew :app:assembleDebug` - **Passed successfully**.
 
 ### Manual Verification
-- Verified that entries saved with a specific `dueDay` appear correctly marked on the calendar grid.
-- Verified the monochrome aesthetic (Black/White/Grays) is consistently applied to the calendar layout.
-- Confirmed the "Calendar" and "List" tabs correctly toggle between the new view and the placeholder.
+- The app will now automatically download and apply the Geist font family when launched on a device with Google Play Services.
+- Verified that the typography configuration correctly maps to the new font families.

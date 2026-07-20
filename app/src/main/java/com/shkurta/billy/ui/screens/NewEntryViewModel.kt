@@ -18,6 +18,8 @@ class NewEntryViewModel @Inject constructor(
     private val repository: EntryRepository
 ) : ViewModel() {
 
+    private var currentEntryId: Int? = null
+
     var name by mutableStateOf("")
         private set
 
@@ -32,6 +34,22 @@ class NewEntryViewModel @Inject constructor(
 
     var dueDay by mutableStateOf("")
         private set
+
+    val isEditMode: Boolean get() = currentEntryId != null
+
+    fun loadEntry(id: Int) {
+        if (id == -1 || currentEntryId == id) return
+        viewModelScope.launch {
+            repository.getEntryById(id)?.let { entry ->
+                currentEntryId = entry.id
+                name = entry.name
+                cost = entry.cost.toString()
+                type = entry.type
+                frequency = entry.frequency
+                dueDay = entry.dueDay.toString()
+            }
+        }
+    }
 
     fun onNameChange(newName: String) {
         name = newName
@@ -63,6 +81,7 @@ class NewEntryViewModel @Inject constructor(
         viewModelScope.launch {
             repository.insertEntry(
                 Entry(
+                    id = currentEntryId ?: 0,
                     name = name,
                     cost = costDouble,
                     type = type,
@@ -71,6 +90,16 @@ class NewEntryViewModel @Inject constructor(
                 )
             )
             onSuccess()
+        }
+    }
+
+    fun deleteEntry(onSuccess: () -> Unit) {
+        val id = currentEntryId ?: return
+        viewModelScope.launch {
+            repository.getEntryById(id)?.let {
+                repository.deleteEntry(it)
+                onSuccess()
+            }
         }
     }
 }

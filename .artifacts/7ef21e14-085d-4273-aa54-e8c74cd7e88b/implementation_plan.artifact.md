@@ -1,48 +1,30 @@
-# Implementation Plan - Calendar View
+# Implementation Plan - Geist and Geist Mono Fonts Support
 
-This plan outlines the steps to implement a calendar view inspired by the provided image, adapted to the existing monochrome theme.
+This plan covers adding the Google Fonts dependency and configuring the app to use the "Geist" and "Geist Mono" font families.
 
 ## Proposed Changes
 
-### Data Layer
+### Build Configuration
 
-#### [MODIFY] [Entry.kt](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/java/com/shkurta/billy/domain/model/Entry.kt)
-- Add a `dueDay: Int` field to the `Entry` data class to represent the day of the month the bill/subscription is due.
+#### [MODIFY] [libs.versions.toml](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/gradle/libs.versions.toml)
+- Add version for `androidx.compose.ui:ui-text-google-fonts` (e.g., `1.7.8` to match typical Compose versions or latest stable `1.8.0-alpha01` if needed, but I'll use a version compatible with the current setup).
+- Add the library entry: `androidx-compose-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "googleFonts" }`.
 
-### UI Layer
+#### [MODIFY] [build.gradle.kts (App)](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/build.gradle.kts)
+- Add `implementation(libs.androidx.compose.ui.text.google.fonts)` to the dependencies block.
 
-#### [NEW] [CalendarView.kt](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/java/com/shkurta/billy/ui/screens/CalendarView.kt)
-- Implement the calendar grid based on the image:
-    - **Day Headers**: Rounded capsules for MON-SUN.
-    - **Day Cells**: Rounded squares for each day of the month.
-    - **Indicators**:
-        - Small circles/icons for entries due on that day.
-        - The day number in the bottom-right corner of each cell.
-    - **Styling**:
-        - Use `LightGray` for empty cells.
-        - Use `White` for the current day or cells with entries (depending on refinement).
-        - Maintain the monochrome theme (Black/White/Gray).
+### UI Layer - Theme
 
-#### [NEW] [HomeViewModel.kt](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/java/com/shkurta/billy/ui/screens/HomeViewModel.kt)
-- Fetch all entries from the repository.
-- Expose a state (e.g., `StateFlow<List<Entry>>`) for the UI to consume.
-
-#### [MODIFY] [HomeScreen.kt](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/java/com/shkurta/billy/ui/screens/HomeScreen.kt)
-- Inject `HomeViewModel`.
-- Pass the list of entries to the `CalendarView`.
-- Replace the placeholder "Calendar View (Coming Soon)" with the new `CalendarView` component.
-
-#### [MODIFY] [NewEntryViewModel.kt](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/java/com/shkurta/billy/ui/screens/NewEntryViewModel.kt)
-- Add a `dueDay` state variable and logic to handle its input.
-
-#### [MODIFY] [NewEntryScreen.kt](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/java/com/shkurta/billy/ui/screens/NewEntryScreen.kt)
-- Add an input field for the `dueDay` (e.g., a simple number field or a slider).
+#### [MODIFY] [Type.kt](file:///C:/Users/g.shkurta/AndroidStudioProjects/billy-app/app/src/main/java/com/shkurta/billy/ui/theme/Type.kt)
+- Define `GeistFontFamily` and `GeistMonoFontFamily` using `GoogleFont`.
+- Update the `Typography` to use `GeistFontFamily` as the default for sans-serif styles.
+- (Optional) Provide a way to use `GeistMonoFontFamily` for specific components if needed.
 
 ## Verification Plan
 
+### Automated Tests
+- Run `./gradlew assembleDebug` to verify the build.
+
 ### Manual Verification
-- Deploy the app.
-- Add a few entries with different `dueDay` values.
-- Navigate to the Home Screen and switch to the "Calendar" tab.
-- Verify that entries appear on the correct days in the grid.
-- Verify the layout and styling match the reference image (adapted to monochrome).
+- Deploy the app and verify the new typography is applied.
+- Specifically check the "Geist" font on UI elements and "Geist Mono" where applicable.

@@ -16,6 +16,9 @@ interface EntryDao {
     @Delete
     suspend fun deleteEntry(entry: Entry)
 
+    @Query("SELECT * FROM entries WHERE id = :id")
+    suspend fun getEntryById(id: Int): Entry?
+
     @Query("SELECT * FROM entries ORDER BY id DESC")
     fun getAllEntries(): Flow<List<Entry>>
 }
