@@ -1,0 +1,6 @@
+- [x] Data Layer: Add `dueDay` to `Entry`
+- [x] UI Layer: Implement `CalendarView` composable
+- [x] Logic: Create `HomeViewModel` to fetch entries
+- [x] UI Layer: Update `HomeScreen` to display `CalendarView`
+- [x] UI Layer: Update `NewEntryViewModel` and `NewEntryScreen` for `dueDay` input
+- [x] Verify build and functionality
