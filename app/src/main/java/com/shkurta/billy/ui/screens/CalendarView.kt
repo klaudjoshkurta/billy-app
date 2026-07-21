@@ -41,6 +41,7 @@ import com.shkurta.billy.domain.model.EntryType
 import com.shkurta.billy.domain.model.PaymentFrequency
 import com.shkurta.billy.ui.theme.Black
 import com.shkurta.billy.ui.theme.DarkGray
+import com.shkurta.billy.ui.theme.GeistMonoFontFamily
 import com.shkurta.billy.ui.theme.Gray
 import com.shkurta.billy.ui.theme.LightGray
 import com.shkurta.billy.ui.theme.White
@@ -51,10 +52,16 @@ import java.util.Locale
 @Composable
 fun CalendarView(
     entries: List<Entry>,
+    totalCost: Double,
     modifier: Modifier = Modifier
 ) {
     val initialPage = Int.MAX_VALUE / 2
     val pagerState = rememberPagerState(initialPage = initialPage) { Int.MAX_VALUE }
+    
+    val today = remember { Calendar.getInstance() }
+    val todayDay = today.get(Calendar.DAY_OF_MONTH)
+    val todayMonth = today.get(Calendar.MONTH)
+    val todayYear = today.get(Calendar.YEAR)
 
     Column(
         modifier = modifier
@@ -75,7 +82,16 @@ fun CalendarView(
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Center
+        )
+
+        Text(
+            text = "TOTAL MONTHLY COST: $${String.format(Locale.getDefault(), "%.2f", totalCost)}",
+            fontSize = 11.sp,
+            fontFamily = GeistMonoFontFamily,
+            color = Gray,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -100,7 +116,8 @@ fun CalendarView(
                         text = day,
                         color = White,
                         fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = GeistMonoFontFamily
                     )
                 }
             }
@@ -149,9 +166,12 @@ fun CalendarView(
                         )
                     }
                     
+                    val isToday = day == todayDay && pageMonth == todayMonth && pageYear == todayYear
+                    
                     CalendarDayCell(
                         day = day,
                         entries = entriesOnDay,
+                        isToday = isToday,
                         modifier = Modifier.padding(2.dp)
                     )
                 }
@@ -164,19 +184,33 @@ fun CalendarView(
 fun CalendarDayCell(
     day: Int,
     entries: List<Entry>,
+    isToday: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val backgroundColor = when {
+        isToday -> White
+        entries.isNotEmpty() -> DarkGray
+        else -> LightGray
+    }
+    
+    val contentColor = when {
+        isToday -> Black
+        entries.isNotEmpty() -> White
+        else -> Black
+    }
+
     Box(
         modifier = modifier
             .aspectRatio(1f)
             .clip(RoundedCornerShape(12.dp))
-            .background(if (entries.isNotEmpty()) DarkGray else LightGray)
+            .background(backgroundColor)
     ) {
         // Day Number (Bottom Right)
         Text(
             text = day.toString(),
-            color = if (entries.isNotEmpty()) White else Black,
+            color = contentColor,
             fontSize = 12.sp,
+            fontFamily = GeistMonoFontFamily,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(4.dp)
@@ -184,40 +218,31 @@ fun CalendarDayCell(
 
         // Entry Indicators (Center)
         if (entries.isNotEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                // Main Dot
                 Box(
                     modifier = Modifier
-                        .size(20.dp)
+                        .size(6.dp)
                         .clip(CircleShape)
-                        .background(White),
-                    contentAlignment = Alignment.Center
-                ) {
-                    val icon = if (entries.any { it.type == EntryType.SUBSCRIPTION }) {
-                         Icons.Default.Subscriptions
-                    } else {
-                        Icons.AutoMirrored.Filled.ReceiptLong
-                    }
-                    
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = Black,
-                        modifier = Modifier.size(12.dp)
+                        .background(if (isToday) Black else White)
+                )
+                
+                if (entries.size > 1) {
+                    Spacer(modifier = Modifier.size(2.dp))
+                    Text(
+                        text = "+${entries.size - 1}",
+                        color = if (isToday) Black else White,
+                        fontSize = 8.sp,
+                        fontFamily = GeistMonoFontFamily,
+                        fontWeight = FontWeight.Bold
                     )
                 }
-                
-                // Dot indicator (Top Right of cell)
-                Box(
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .size(4.dp)
-                        .clip(CircleShape)
-                        .background(White)
-                        .align(Alignment.TopEnd)
-                )
             }
         }
     }

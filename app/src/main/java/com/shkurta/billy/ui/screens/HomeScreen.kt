@@ -8,12 +8,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,12 +26,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.shkurta.billy.R
 import com.shkurta.billy.ui.components.BillyTabSwitcher
+import com.shkurta.billy.ui.theme.DarkGray
 import com.shkurta.billy.ui.theme.Gray
+import com.shkurta.billy.ui.theme.White
 import java.util.Locale
 
 enum class HomeTab {
@@ -45,20 +52,6 @@ fun HomeScreen(
     val totalCost by viewModel.totalMonthlyCost.collectAsState()
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Column {
-                        Text("Billy")
-                        Text(
-                            text = "Total Monthly: $${String.format(Locale.getDefault(), "%.2f", totalCost)}",
-                            fontSize = 12.sp,
-                            color = Gray
-                        )
-                    }
-                }
-            )
-        },
         floatingActionButton = {
             FloatingActionButton(onClick = { onNavigateToNewEntry(null) }) {
                 Icon(Icons.Default.Add, contentDescription = "Add New Entry")
@@ -69,6 +62,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .statusBarsPadding()
         ) {
             Box(
                 modifier = Modifier
@@ -91,11 +85,16 @@ fun HomeScreen(
             }
 
             Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                modifier = Modifier.fillMaxSize()
             ) {
                 when (selectedTab) {
-                    HomeTab.CALENDAR -> CalendarView(entries = entries)
+                    HomeTab.CALENDAR -> {
+                        CalendarView(
+                            entries = entries,
+                            totalCost = totalCost,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                     HomeTab.LIST -> BillyListView(
                         entries = entries,
                         onEntryClick = { onNavigateToNewEntry(it.id) },
