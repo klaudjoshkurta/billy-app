@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.shkurta.billy.R
 import com.shkurta.billy.ui.components.BillyTabSwitcher
 import com.shkurta.billy.ui.theme.Gray
 import java.util.Locale
@@ -79,7 +80,13 @@ fun HomeScreen(
                     options = HomeTab.entries,
                     selectedOption = selectedTab,
                     onOptionSelected = { selectedTab = it },
-                    modifier = Modifier.fillMaxWidth(0.7f)
+                    modifier = Modifier.fillMaxWidth(0.7f),
+                    optionToIcon = { tab ->
+                        when (tab) {
+                            HomeTab.CALENDAR -> R.drawable.ic_calendar
+                            HomeTab.LIST -> R.drawable.ic_list
+                        }
+                    }
                 )
             }
 
