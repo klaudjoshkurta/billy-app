@@ -92,6 +92,7 @@ fun HomeScreen(
                         CalendarView(
                             entries = entries,
                             totalCost = totalCost,
+                            onEntryClick = { onNavigateToNewEntry(it.id) },
                             modifier = Modifier.fillMaxSize()
                         )
                     }

@@ -31,7 +31,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -53,6 +65,7 @@ import java.util.Locale
 fun CalendarView(
     entries: List<Entry>,
     totalCost: Double,
+    onEntryClick: (Entry) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val initialPage = Int.MAX_VALUE / 2
@@ -62,6 +75,10 @@ fun CalendarView(
     val todayDay = today.get(Calendar.DAY_OF_MONTH)
     val todayMonth = today.get(Calendar.MONTH)
     val todayYear = today.get(Calendar.YEAR)
+    
+    var selectedDay by remember { mutableIntStateOf(todayDay) }
+    var selectedMonth by remember { mutableIntStateOf(todayMonth) }
+    var selectedYear by remember { mutableIntStateOf(todayYear) }
 
     Column(
         modifier = modifier
@@ -141,8 +158,6 @@ fun CalendarView(
             val pageYear = calendar.get(Calendar.YEAR)
 
             val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
-            // Calendar.DAY_OF_WEEK: SUNDAY=1, MONDAY=2, ...
-            // We want MONDAY=0, TUESDAY=1, ... SUNDAY=6
             val firstDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
             val firstDayOffset = if (firstDayOfWeek == Calendar.SUNDAY) 6 else firstDayOfWeek - 2
 
@@ -150,9 +165,8 @@ fun CalendarView(
                 columns = GridCells.Fixed(7),
                 contentPadding = PaddingValues(0.dp),
                 modifier = Modifier.fillMaxWidth(),
-                userScrollEnabled = false // Let the pager handle horizontal swiping
+                userScrollEnabled = false
             ) {
-                // Empty cells for offset
                 items(firstDayOffset) {
                     Box(modifier = Modifier.aspectRatio(1f))
                 }
@@ -167,15 +181,135 @@ fun CalendarView(
                     }
                     
                     val isToday = day == todayDay && pageMonth == todayMonth && pageYear == todayYear
+                    val isSelected = day == selectedDay && pageMonth == selectedMonth && pageYear == selectedYear
                     
                     CalendarDayCell(
                         day = day,
                         entries = entriesOnDay,
                         isToday = isToday,
+                        isSelected = isSelected,
+                        onClick = {
+                            selectedDay = day
+                            selectedMonth = pageMonth
+                            selectedYear = pageYear
+                        },
                         modifier = Modifier.padding(2.dp)
                     )
                 }
             }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Agenda Section
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "AGENDA",
+                fontSize = 12.sp,
+                fontFamily = GeistMonoFontFamily,
+                color = Gray,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            
+            val agendaEntries = entries.filter { entry ->
+                entry.dueDay == selectedDay && (
+                    entry.frequency != PaymentFrequency.ONE_OFF || 
+                    (entry.dueMonth == selectedMonth && entry.dueYear == selectedYear)
+                )
+            }
+            
+            if (agendaEntries.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No payments due on this day",
+                        color = Gray,
+                        fontSize = 14.sp
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(agendaEntries) { entry ->
+                        AgendaItem(
+                            entry = entry,
+                            onClick = { onEntryClick(entry) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AgendaItem(
+    entry: Entry,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        color = DarkGray,
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(White),
+                contentAlignment = Alignment.Center
+            ) {
+                val icon = if (entry.type == EntryType.SUBSCRIPTION) {
+                    Icons.Default.Subscriptions
+                } else {
+                    Icons.AutoMirrored.Filled.ReceiptLong
+                }
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = Black,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = entry.name,
+                    color = White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = entry.frequency.name.lowercase().replaceFirstChar { it.uppercase() }.replace("_", " "),
+                    color = Gray,
+                    fontSize = 12.sp
+                )
+            }
+            
+            Text(
+                text = "$${String.format(Locale.getDefault(), "%.2f", entry.cost)}",
+                color = White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = GeistMonoFontFamily
+            )
         }
     }
 }
@@ -185,6 +319,8 @@ fun CalendarDayCell(
     day: Int,
     entries: List<Entry>,
     isToday: Boolean,
+    isSelected: Boolean,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val backgroundColor = when {
@@ -198,12 +334,18 @@ fun CalendarDayCell(
         entries.isNotEmpty() -> White
         else -> Black
     }
+    
+    val borderModifier = if (isSelected && !isToday) {
+        Modifier.border(2.dp, Gray, RoundedCornerShape(12.dp))
+    } else Modifier
 
     Box(
         modifier = modifier
             .aspectRatio(1f)
             .clip(RoundedCornerShape(12.dp))
             .background(backgroundColor)
+            .then(borderModifier)
+            .clickable { onClick() }
     ) {
         // Day Number (Bottom Right)
         Text(
